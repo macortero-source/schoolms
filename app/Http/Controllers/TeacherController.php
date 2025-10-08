@@ -18,6 +18,8 @@ class TeacherController extends Controller
     /**
      * Display a listing of teachers.
      */
+
+    
     public function index(Request $request)
     {
         $query = Teacher::with(['user', 'subjects']);
@@ -265,4 +267,14 @@ class TeacherController extends Controller
         return redirect()->route('teachers.show', $teacher)
             ->with('success', 'Subject assignments updated successfully!');
     }
+   public function myProfile()
+{
+    $teacher = auth()->user()->teacher; // assumes User hasOne Teacher
+    if (!$teacher) {
+        abort(404, 'Teacher profile not found');
+    }
+    return view('teachers.show', compact('teacher'));
+}
+
+
 }

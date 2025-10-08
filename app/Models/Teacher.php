@@ -47,6 +47,10 @@ class Teacher extends Model
     {
         return $this->belongsTo(User::class);
     }
+    public function teacher()
+{
+    return $this->hasOne(\App\Models\Teacher::class, 'user_id');
+}
 
     // Many-to-Many: Teacher teaches many subjects in many classes
     public function subjects()

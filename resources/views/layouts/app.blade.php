@@ -419,6 +419,52 @@
 .badge.bg-warning { background-color: #ffc107 !important; color: #333; }
 .badge.bg-info    { background-color: #17a2b8 !important; }
 .badge.bg-secondary { background-color: #6c757d !important; }
+.card-header {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white;
+  font-weight: 600;
+  border-radius: 12px 12px 0 0;
+}
+
+h5.text-primary {
+  font-weight: 600;
+  font-size: 1.1rem;
+  border-left: 4px solid var(--primary-color);
+  padding-left: 0.75rem;
+}
+.form-control, .form-select {
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  padding: 0.6rem 1rem;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
+}
+input[type="file"] {
+  padding: 0.5rem;
+  border-radius: 8px;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  padding: 0.6rem 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102,126,234,0.3);
+}
+h5.text-primary {
+  font-weight: 600;
+  font-size: 1.1rem;
+  border-left: 4px solid var(--primary-color);
+  padding-left: 0.75rem;
+}
 
 
 

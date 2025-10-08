@@ -124,7 +124,17 @@
 
                         <div class="col-md-6">
                             <label for="profile_photo" class="form-label">Profile Photo</label>
-                            <input type="file" class="form-control @error('profile_photo') is-invalid @enderror" id="profile_photo" name="profile_photo" accept="image/*">
+                            <input 
+                                type="file" 
+                                class="form-control @error('profile_photo') is-invalid @enderror" 
+                                id="profile_photo" 
+                                name="profile_photo" 
+                                accept="image/*" 
+                                onchange="previewImage(event)">
+                            
+                            <!-- Image preview -->
+                            <img id="preview" class="mt-2 rounded border" style="max-width: 120px; display:none;" alt="Profile Preview">
+
                             @error('profile_photo')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -316,3 +326,25 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+function previewImage(event) {
+    const [file] = event.target.files;
+    const preview = document.getElementById('preview');
+    if (file) {
+        if (!file.type.startsWith('image/')) {
+            alert('Please upload a valid image file.');
+            event.target.value = '';
+            preview.style.display = 'none';
+            return;
+        }
+        preview.src = URL.createObjectURL(file);
+        preview.style.display = 'block';
+    } else {
+        preview.src = '';
+        preview.style.display = 'none';
+    }
+}
+</script>
+@endpush
