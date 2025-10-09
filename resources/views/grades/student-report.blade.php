@@ -28,36 +28,44 @@
 </div>
 
 <!-- Student Profile Summary -->
-<!-- Student Profile Summary -->
-<div class="card mb-4">
-    <div class="card-body">
+<div class="card mb-4 shadow-sm border-0">
+    <div class="card-body py-4">
         <div class="row align-items-center">
+            
             <div class="col-md-2 text-center">
-                <x-user-avatar :user="optional($student)->user" :size="100" class="rounded-circle" />
+                <x-user-avatar 
+                    :user="optional($student)->user" 
+                    :size="100" 
+                    class="rounded-circle border border-3 border-primary shadow-sm mb-2" 
+                />
+                <span class="badge bg-success mt-2">Active</span>
             </div>
+
+            <!-- Student Info -->
             <div class="col-md-10">
-                <div class="row">
+                <div class="row g-3">
                     <div class="col-md-3">
-                        <strong>Student Name:</strong>
-                        <p class="mb-0">{{ optional(optional($student)->user)->name ?? 'N/A' }}</p>
+                        <small class="text-muted text-uppercase fw-bold">Student Name</small>
+                        <p class="mb-0 fs-6 fw-semibold">{{ optional(optional($student)->user)->name ?? 'N/A' }}</p>
                     </div>
                     <div class="col-md-3">
-                        <strong>Student Number:</strong>
-                        <p class="mb-0">{{ optional($student)->student_number ?? 'N/A' }}</p>
+                        <small class="text-muted text-uppercase fw-bold">Student Number</small>
+                        <p class="mb-0 fs-6 fw-semibold">{{ optional($student)->student_number ?? 'N/A' }}</p>
                     </div>
                     <div class="col-md-3">
-                        <strong>Class:</strong>
-                        <p class="mb-0">{{ optional(optional($student)->class)->full_name ?? 'N/A' }}</p>
+                        <small class="text-muted text-uppercase fw-bold">Class</small>
+                        <p class="mb-0 fs-6 fw-semibold">{{ optional(optional($student)->class)->full_name ?? 'N/A' }}</p>
                     </div>
                     <div class="col-md-3">
-                        <strong>Academic Year:</strong>
-                        <p class="mb-0">{{ $academicYear }}</p>
+                        <small class="text-muted text-uppercase fw-bold">Academic Year</small>
+                        <span class="badge bg-primary px-3 py-2">{{ $academicYear }}</span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
 
 
 <!-- Statistics Cards -->

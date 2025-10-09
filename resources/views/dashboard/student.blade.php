@@ -16,7 +16,7 @@
 <div class="row mb-4">
     <div class="col-md-12">
         <div class="card border-0 shadow-sm">
-            <!-- Gradient Header -->
+            
             <div class="card-header text-white py-4" 
                  style="background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);">
                 <h4 class="mb-0">

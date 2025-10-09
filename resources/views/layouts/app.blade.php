@@ -499,6 +499,28 @@ h5.text-primary {
   font-size: 0.75rem;
   border-radius: 6px;
 }
+.card {
+  border-radius: 12px;
+}
+
+.card-body {
+  background: #fff;
+}
+
+.card-body small {
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+}
+
+.card-body p {
+  color: #333;
+}
+
+.badge {
+  font-size: 0.8rem;
+  border-radius: 6px;
+}
+
 
 
 
