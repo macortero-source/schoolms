@@ -30,6 +30,11 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
+        .x-primary-button:hover {
+  transform: scale(1.05);
+  transition: all 0.2s ease;
+}
+
     </style>
 </head>
 <body>

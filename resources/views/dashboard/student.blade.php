@@ -15,47 +15,92 @@
 <!-- Profile Card -->
 <div class="row mb-4">
     <div class="col-md-12">
-        <div class="card">
-            <div class="card-body">
+        <div class="card border-0 shadow-sm">
+            <!-- Gradient Header -->
+            <div class="card-header text-white py-4" 
+                 style="background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);">
+                <h4 class="mb-0">
+                    <i class="fas fa-user-graduate me-2"></i>Student Profile
+                </h4>
+            </div>
+
+            <div class="card-body bg-light">
                 <div class="row align-items-center">
                     <div class="col-md-2 text-center">
                         <x-user-avatar 
                             :user="optional($student)->user ?? auth()->user()" 
                             :size="150" 
-                            class="rounded-circle mb-3" 
+                            class="rounded-circle mb-3 border border-3 border-white shadow-sm" 
                         />
                     </div>
+
                     <div class="col-md-10">
-                        <h3 class="mb-2">{{ optional($student->user)->name ?? 'N/A' }}</h3>
+                        <h3 class="mb-2 fw-bold">
+                            {{ optional($student->user)->name ?? 'N/A' }}
+                        </h3>
+
                         <div class="row">
-                            <div class="col-md-3">
+                            <div class="col-md-3 mb-2">
                                 <p class="mb-1"><strong>Student Number:</strong></p>
-                                <p class="text-muted">{{ optional($student)->student_number ?? 'N/A' }}</p>
+                                <span class="badge bg-secondary">
+                                    {{ optional($student)->student_number ?? 'N/A' }}
+                                </span>
                             </div>
-                            <div class="col-md-3">
+
+                            <div class="col-md-3 mb-2">
                                 <p class="mb-1"><strong>Class:</strong></p>
-                                <p class="text-muted">{{ optional($class)->full_name ?? 'N/A' }}</p>
+                                <span class="badge bg-info text-dark">
+                                    {{ optional($class)->full_name ?? 'N/A' }}
+                                </span>
                             </div>
-                            <div class="col-md-3">
+
+                            <div class="col-md-3 mb-2">
                                 <p class="mb-1"><strong>Academic Year:</strong></p>
-                                <p class="text-muted">{{ optional($student)->academic_year ?? 'N/A' }}</p>
+                                <span class="badge bg-primary">
+                                    {{ optional($student)->academic_year ?? 'N/A' }}
+                                </span>
                             </div>
-                            <div class="col-md-3">
+
+                            <div class="col-md-3 mb-2">
                                 <p class="mb-1"><strong>Class Rank:</strong></p>
-                                <p class="text-muted">{{ $stats['class_rank'] ?? 0 }} / {{ optional($class)->total_students ?? 0 }}</p>
+                                <span class="badge bg-success">
+                                    {{ $stats['class_rank'] ?? 0 }} / {{ optional($class)->total_students ?? 0 }}
+                                </span>
+
+                                @php
+                                    $rank = $stats['class_rank'] ?? 0;
+                                    $total = optional($class)->total_students ?? 1;
+                                    $progress = $total > 0 ? (($total - $rank + 1) / $total) * 100 : 0;
+                                @endphp
+
+                                <div class="progress mt-1" style="height: 6px;">
+                                    <div 
+                                        class="progress-bar bg-success" 
+                                        role="progressbar"
+                                        style="width: {{ number_format($progress, 2) }}%;"
+                                        aria-valuenow="{{ number_format($progress, 2) }}" 
+                                        aria-valuemin="0" 
+                                        aria-valuemax="100">
+                                    </div>
+                                </div>
                             </div>
                         </div>
+
+                        @if(optional($student)->status)
+                            <div class="mt-2">
+                                <span class="badge bg-success px-3 py-2">Active</span>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
 
 <!-- Statistics Cards -->
 <div class="row">
-    <div class="col-md-3">
+    <div class="col-md-3 mb-3">
         <div class="stats-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
             <i class="fas fa-calendar-check fa-2x mb-3"></i>
             <h3>{{ number_format($stats['attendance_percentage'], 1) }}%</h3>
@@ -64,7 +109,7 @@
         </div>
     </div>
 
-    <div class="col-md-3">
+    <div class="col-md-3 mb-3">
         <div class="stats-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
             <i class="fas fa-graduation-cap fa-2x mb-3"></i>
             <h3>{{ number_format($stats['current_gpa'], 2) }}</h3>
@@ -73,7 +118,7 @@
         </div>
     </div>
 
-    <div class="col-md-3">
+    <div class="col-md-3 mb-3">
         <div class="stats-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
             <i class="fas fa-check-circle fa-2x mb-3"></i>
             <h3>{{ $stats['total_present'] }}</h3>
@@ -81,7 +126,7 @@
         </div>
     </div>
 
-    <div class="col-md-3">
+    <div class="col-md-3 mb-3">
         <div class="stats-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
             <i class="fas fa-times-circle fa-2x mb-3"></i>
             <h3>{{ $stats['total_absent'] }}</h3>
@@ -92,7 +137,7 @@
 
 <div class="row mt-4">
     <!-- Recent Grades -->
-    <div class="col-md-6">
+    <div class="col-md-6 mb-4">
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <span><i class="fas fa-star me-2"></i>Recent Grades</span>
@@ -100,18 +145,47 @@
             </div>
             <div class="card-body">
                 @forelse($recentGrades as $grade)
-                    <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
-                        <div>
-                            <h6 class="mb-1">{{ $grade->exam->subject->name }}</h6>
-                            <small class="text-muted">{{ $grade->exam->name }}</small>
+                    @php
+                        $badgeClass = match(strtoupper($grade->grade)) {
+                            'A' => 'success',
+                            'B' => 'primary',
+                            'C' => 'warning',
+                            'D', 'F' => 'danger',
+                            default => 'secondary',
+                        };
+
+                        $scorePercent = $grade->exam->total_marks > 0 
+                            ? ($grade->marks_obtained / $grade->exam->total_marks) * 100 
+                            : 0;
+                    @endphp
+
+                    <div class="mb-3 pb-3 border-bottom">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">{{ $grade->exam->subject->name }}</h6>
+                                <small class="text-muted">{{ $grade->exam->name }}</small>
+                            </div>
+                            <div class="text-end">
+                                <h5 class="mb-0">
+                                    <span class="badge bg-{{ $badgeClass }}">
+                                        {{ $grade->grade }}
+                                    </span>
+                                </h5>
+                                <small class="text-muted">
+                                    Score: {{ $grade->marks_obtained }}/{{ $grade->exam->total_marks }}
+                                </small>
+                            </div>
                         </div>
-                        <div class="text-end">
-                            <h5 class="mb-0">
-                                <span class="badge bg-{{ getGradeBadge($grade->grade) }}">
-                                    {{ $grade->grade }}
-                                </span>
-                            </h5>
-                            <small class="text-muted">{{ $grade->marks_obtained }}/{{ $grade->exam->total_marks }}</small>
+
+                        <div class="progress mt-1" style="height: 5px;">
+                            <div 
+                                class="progress-bar bg-info" 
+                                role="progressbar"
+                                style="width: {{ number_format($scorePercent, 2) }}%;" 
+                                aria-valuenow="{{ number_format($scorePercent, 2) }}" 
+                                aria-valuemin="0" 
+                                aria-valuemax="100">
+                            </div>
                         </div>
                     </div>
                 @empty
@@ -122,11 +196,10 @@
     </div>
 
     <!-- Upcoming Exams -->
-    <div class="col-md-6">
+    <div class="col-md-6 mb-4">
         <div class="card">
             <div class="card-header">
-                <i class="fas fa-file-alt me-2"></i>
-                Upcoming Exams
+                <i class="fas fa-file-alt me-2"></i>Upcoming Exams
             </div>
             <div class="card-body">
                 @forelse($upcomingExams as $exam)
@@ -139,7 +212,9 @@
                             <span class="badge bg-info d-block mb-1">
                                 {{ $exam->exam_date->format('M d, Y') }}
                             </span>
-                            <small class="text-muted">{{ $exam->start_time ? $exam->start_time->format('h:i A') : '' }}</small>
+                            <small class="text-muted">
+                                {{ $exam->start_time ? $exam->start_time->format('h:i A') : '' }}
+                            </small>
                         </div>
                     </div>
                 @empty

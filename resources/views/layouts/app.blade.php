@@ -146,17 +146,31 @@
         }
 
         .stats-card {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-            color: white;
-            border-radius: 15px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  border-radius: 12px;
+  color: #fff;
+  padding: 1.5rem;
+  text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
 
-        .stats-card h3 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin: 0;
+.stats-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.stats-card h3 {
+  font-size: 2.4rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.stats-card p {
+  margin: 0.5rem 0 0;
+  opacity: 0.9;
+  font-weight: 500;
+}
+    margin: 0;
         }
 
         .stats-card p {
@@ -465,6 +479,27 @@ h5.text-primary {
   border-left: 4px solid var(--primary-color);
   padding-left: 0.75rem;
 }
+.table thead th {
+  background: #f4f6fb;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  color: #555;
+}
+
+.table-hover tbody tr:hover {
+  background-color: #f9f9ff;
+}
+.badge {
+  padding: 0.4rem 0.7rem;
+  font-size: 0.75rem;
+  border-radius: 6px;
+}
+.badge {
+  padding: 0.4rem 0.7rem;
+  font-size: 0.75rem;
+  border-radius: 6px;
+}
+
 
 
 
