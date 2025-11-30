@@ -26,7 +26,7 @@ Route::get('/', function () {
 
 // Authenticated Routes
 Route::middleware('auth')->group(function () {
-    
+
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
@@ -35,15 +35,16 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
+    // ===============================
     // Admin Routes
+    // ===============================
     Route::middleware(['role:admin'])->group(function () {
-        
+
         // Student Management
         Route::resource('students', StudentController::class);
         Route::post('students/{student}/toggle-status', [StudentController::class, 'toggleStatus'])
             ->name('students.toggle-status');
-        Route::get('students-export', [StudentController::class, 'export'])
-            ->name('students.export');
+        Route::get('students-export', [StudentController::class, 'export'])->name('students.export');
 
         // Teacher Management
         Route::resource('teachers', TeacherController::class);
@@ -63,9 +64,11 @@ Route::middleware('auth')->group(function () {
             ->name('subjects.toggle-status');
     });
 
+    // ===============================
     // Admin & Teacher Routes
+    // ===============================
     Route::middleware(['role:admin,teacher'])->group(function () {
-        
+
         // Attendance Management
         Route::get('attendance', [AttendanceController::class, 'index'])->name('attendance.index');
         Route::post('attendance', [AttendanceController::class, 'store'])->name('attendance.store');
@@ -84,33 +87,7 @@ Route::middleware('auth')->group(function () {
         Route::put('grades/{grade}', [GradeController::class, 'update'])->name('grades.update');
         Route::delete('grades/{grade}', [GradeController::class, 'destroy'])->name('grades.destroy');
 
-        // Announcement Management
-        Route::resource('announcements', AnnouncementController::class);
-        Route::post('announcements/{announcement}/toggle-status', [AnnouncementController::class, 'toggleStatus'])
-            ->name('announcements.toggle-status');
-    });
-
-    // Student Routes
-Route::middleware(['auth', 'role:student'])->group(function () {
-    // View own grades
-    Route::get('my-grades', [GradeController::class, 'studentReport'])
-        ->name('grades.studentReport');
-
-    // View own attendance
-    Route::get('my-attendance', [AttendanceController::class, 'student'])
-        ->name('student.attendance');
-});
-
-
-    // All Authenticated Users
-    Route::get('announcements-public', [AnnouncementController::class, 'public'])->name('announcements.public');
-    Route::get('attendance/student/{student}', [AttendanceController::class, 'student'])
-        ->name('attendance.student');
-
-    // Reports (Admin & Teacher)
-    Route::middleware(['role:admin,teacher'])->group(function () {
-        Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
-        Route::get('reports/form', [ReportController::class, 'showForm'])->name('reports.form');
+        // Reports (Admin & Teacher)
         Route::post('reports/student-report-card', [ReportController::class, 'studentReportCard'])
             ->name('reports.student-report-card');
         Route::post('reports/class-performance', [ReportController::class, 'classPerformance'])
@@ -121,8 +98,92 @@ Route::middleware(['auth', 'role:student'])->group(function () {
             ->name('reports.exam-analysis');
         Route::post('reports/subject-performance', [ReportController::class, 'subjectPerformance'])
             ->name('reports.subject-performance');
+
+        // Announcement Management
+        Route::resource('announcements', AnnouncementController::class);
+        Route::post('announcements/{announcement}/toggle-status', [AnnouncementController::class, 'toggleStatus'])
+            ->name('announcements.toggle-status');
     });
+
+    // ===============================
+    // Student Routes
+    // ===============================
+    Route::middleware(['role:student'])->group(function () {
+        Route::get('/student/dashboard', [StudentController::class, 'dashboard'])->name('student.dashboard');
+        Route::get('my-grades', [GradeController::class, 'studentReport'])->name('grades.studentReport');
+        Route::get('my-attendance', [AttendanceController::class, 'student'])->name('student.attendance');
+
+        // Student report card (same route as admin/teacher, different middleware)
+        Route::post('reports/student-report-card', [ReportController::class, 'studentReportCard'])
+            ->name('reports.student-report-card'); 
+
+            // Student Routes
+// ===============================
+// Student Routes
+// ===============================
+Route::middleware(['auth', 'role:student'])->group(function () {
+
+    // Student Dashboard
+    Route::get('/student/dashboard', [StudentController::class, 'dashboard'])->name('student.dashboard');
+
+    // My Grades
+    Route::get('my-grades', function() {
+        $user = auth()->user();
+
+        if (!$user->student) {
+            return redirect()->route('dashboard')
+                ->with('error', 'Student profile not found. Please contact administrator.');
+        }
+
+        $student = $user->student;
+        $academicYear = request('academic_year', date('Y') . '-' . (date('Y') + 1));
+
+        // Get grades grouped by subject
+        $grades = $student->grades()
+            ->with(['exam.subject', 'exam.class'])
+            ->whereHas('exam', function($query) use ($academicYear) {
+                $query->where('academic_year', $academicYear);
+            })
+            ->get()
+            ->groupBy('exam.subject.name');
+
+        // Calculate statistics
+        $stats = [
+            'total_exams' => $student->getTotalExamsCount(),
+            'current_gpa' => $student->calculateGPA($academicYear),
+            'average_marks' => $student->getAverageMarks(),
+            'failed_exams' => $student->getFailedExamsCount(),
+            'total_subjects' => $grades->count(),
+            'attendance_percentage' => $student->getCurrentMonthAttendance(),
+            'class_rank' => $student->getClassRank(),
+            'total_students' => $student->class ? $student->class->total_students : 0,
+        ];
+
+        return view('grades.student-report', compact('student', 'grades', 'stats', 'academicYear'));
+    })->name('grades.studentReport'); // optional, for other links
+
+    // Student Attendance
+    Route::get('my-attendance', [AttendanceController::class, 'student'])->name('student.attendance');
+
+    // Announcements for Students
+    Route::get('announcements-public', [AnnouncementController::class, 'public'])->name('announcements.public');
+
+    // ===============================
+    // Student Report Card (PDF Download)
+    // ===============================
+    Route::post('reports/student-report-card', [ReportController::class, 'studentReportCard'])
+        ->name('reports.student-report-card'); // <-- matches Blade form
 });
 
-// Auth Routes (provided by Breeze)
+    });
+
+    // ===============================
+    // Public/All Authenticated Users
+    // ===============================
+    Route::get('announcements-public', [AnnouncementController::class, 'public'])->name('announcements.public');
+    Route::get('attendance/student/{student}', [AttendanceController::class, 'student'])->name('attendance.student');
+
+});
+
+// Auth Routes (Breeze)
 require __DIR__.'/auth.php';

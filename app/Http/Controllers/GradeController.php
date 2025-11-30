@@ -162,4 +162,44 @@ class GradeController extends Controller
     return view('grades.student-report', compact('student', 'grades', 'stats', 'academicYear'));
 }
 
+/**
+ * Show student's own grade report
+ */
+public function myGrades(Request $request)
+{
+    $user = auth()->user();
+    
+    // Check if user has a student profile
+    if (!$user->student) {
+        return redirect()->route('dashboard')
+            ->with('error', 'Student profile not found. Please contact administrator.');
+    }
+    
+    $student = $user->student;
+    $academicYear = $request->input('academic_year', date('Y') . '-' . (date('Y') + 1));
+    
+    // Get grades grouped by subject
+    $grades = $student->grades()
+        ->with(['exam.subject', 'exam.class'])
+        ->whereHas('exam', function($query) use ($academicYear) {
+            $query->where('academic_year', $academicYear);
+        })
+        ->get()
+        ->groupBy('exam.subject.name');
+
+    // Calculate statistics
+    $stats = [
+        'total_exams' => $student->getTotalExamsCount(),
+        'current_gpa' => $student->calculateGPA($academicYear),
+        'average_marks' => $student->getAverageMarks(),
+        'failed_exams' => $student->getFailedExamsCount(),
+        'total_subjects' => $grades->count(),
+        'attendance_percentage' => $student->getCurrentMonthAttendance(),
+        'class_rank' => $student->getClassRank(),
+        'total_students' => $student->class ? $student->class->total_students : 0,
+    ];
+
+    return view('grades.student-report', compact('student', 'grades', 'stats', 'academicYear'));
+}
+
 }

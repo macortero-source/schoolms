@@ -24,54 +24,64 @@ class ReportController extends Controller
      * Generate student report card
      */
     public function studentReportCard(Request $request)
-    {
-        $request->validate([
-            'student_id' => 'required|exists:students,id',
-            'academic_year' => 'required|string',
-            'semester' => 'nullable|string',
-        ]);
+{
+    // Validate input
+    $request->validate([
+        'student_id' => 'required|exists:students,id',
+        'academic_year' => 'required|string',
+        'semester' => 'nullable|string',
+    ]);
 
-        $student = Student::with(['user', 'class'])->findOrFail($request->student_id);
-        $academicYear = $request->academic_year;
-        $semester = $request->semester;
+    // Find student
+    $student = Student::with(['user', 'class'])->findOrFail($request->student_id);
+    $academicYear = $request->academic_year;
+    $semester = $request->semester;
 
-        // Get all grades for the student in the academic year
-        $grades = $student->grades()
-            ->with(['exam.subject'])
-            ->whereHas('exam', function($query) use ($academicYear, $semester) {
-                $query->where('academic_year', $academicYear);
-                if ($semester) {
-                    $query->where('semester', $semester);
-                }
-            })
-            ->get()
-            ->groupBy('exam.subject.name');
-
-        // Calculate statistics
-        $stats = [
-            'total_subjects' => $grades->count(),
-            'gpa' => $student->calculateGPA($academicYear, $semester),
-            'attendance_percentage' => $student->getAttendancePercentage(
-                Carbon::parse($academicYear)->startOfYear(),
-                Carbon::parse($academicYear)->endOfYear()
-            ),
-            'class_rank' => $student->getClassRank(),
-            'total_students' => $student->class->total_students ?? 0,
-        ];
-
-        // Generate PDF
-        $pdf = PDF::loadView('reports.student-report-card', compact(
-            'student',
-            'grades',
-            'stats',
-            'academicYear',
-            'semester'
-        ));
-
-        $filename = 'report_card_' . $student->student_number . '_' . $academicYear . '.pdf';
-
-        return $pdf->download($filename);
+    // Split academic year into start and end years
+    if (!str_contains($academicYear, '-')) {
+        return back()->withErrors(['academic_year' => 'Invalid academic year format.']);
     }
+
+    list($startYear, $endYear) = explode('-', $academicYear);
+
+    $startDate = Carbon::createFromDate($startYear, 1, 1);
+    $endDate = Carbon::createFromDate($endYear, 12, 31);
+
+    // Get grades for student in the academic year (and semester if provided)
+    $grades = $student->grades()
+        ->with(['exam.subject'])
+        ->whereHas('exam', function ($query) use ($academicYear, $semester) {
+            $query->where('academic_year', $academicYear);
+            if ($semester) {
+                $query->where('semester', $semester);
+            }
+        })
+        ->get()
+        ->groupBy('exam.subject.name');
+
+    // Calculate statistics
+    $stats = [
+        'total_subjects' => $grades->count(),
+        'gpa' => $student->calculateGPA($academicYear, $semester),
+        'attendance_percentage' => $student->getAttendancePercentage($startDate, $endDate),
+        'class_rank' => $student->getClassRank(),
+        'total_students' => $student->class->total_students ?? 0,
+    ];
+
+    // Generate PDF
+    $pdf = PDF::loadView('reports.student-report-card', compact(
+        'student',
+        'grades',
+        'stats',
+        'academicYear',
+        'semester'
+    ));
+
+    $filename = 'report_card_' . $student->student_number . '_' . str_replace('-', '_', $academicYear) . '.pdf';
+
+    return $pdf->download($filename);
+}
+
 
     /**
      * Generate class performance report
