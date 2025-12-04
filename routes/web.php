@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
-// Welcome Page
+
 Route::get('/', function () {
     return view('welcome');
 });
@@ -182,8 +182,17 @@ Route::middleware(['auth', 'role:student'])->group(function () {
     // ===============================
     Route::get('announcements-public', [AnnouncementController::class, 'public'])->name('announcements.public');
     Route::get('attendance/student/{student}', [AttendanceController::class, 'student'])->name('attendance.student');
+Route::middleware(['auth','role:admin,teacher'])->group(function () {
+    Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
+        Route::get('reports/form/{type}', [ReportController::class, 'showForm'])
+    ->name('reports.form');
 
 });
+
+
+
+});
+
 
 // Auth Routes (Breeze)
 require __DIR__.'/auth.php';

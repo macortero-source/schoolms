@@ -113,28 +113,29 @@
 <!-- Filter Options -->
 <div class="card mb-4">
     <div class="card-body">
-        <form method="GET" action="{{ route('student.grades') }}">
-            <div class="row g-3 align-items-end">
-                <div class="col-md-8">
-                    <label for="academic_year" class="form-label">Academic Year</label>
-                    <select name="academic_year" id="academic_year" class="form-select">
-                        @for($year = date('Y') - 2; $year <= date('Y') + 1; $year++)
-                            @php
-                                $yearRange = $year . '-' . ($year + 1);
-                            @endphp
-                            <option value="{{ $yearRange }}" {{ $academicYear == $yearRange ? 'selected' : '' }}>
-                                {{ $yearRange }}
-                            </option>
-                        @endfor
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <button type="submit" class="btn btn-primary w-100">
-                        <i class="fas fa-filter me-2"></i>Filter
-                    </button>
-                </div>
-            </div>
-        </form>
+        <form method="GET" action="{{ route('grades.studentReport') }}">
+    <div class="row g-3 align-items-end">
+        <div class="col-md-8">
+            <label for="academic_year" class="form-label">Academic Year</label>
+            <select name="academic_year" id="academic_year" class="form-select">
+                @for($year = date('Y') - 2; $year <= date('Y') + 1; $year++)
+                    @php
+                        $yearRange = $year . '-' . ($year + 1);
+                    @endphp
+                    <option value="{{ $yearRange }}" {{ $academicYear == $yearRange ? 'selected' : '' }}>
+                        {{ $yearRange }}
+                    </option>
+                @endfor
+            </select>
+        </div>
+        <div class="col-md-4">
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="fas fa-filter me-2"></i>Filter
+            </button>
+        </div>
+    </div>
+</form>
+
     </div>
 </div>
 

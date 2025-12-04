@@ -21,67 +21,84 @@ class ReportController extends Controller
     }
 
     /**
+     * Show report generation forms
+     */
+    public function showForm(Request $request)
+    {
+        $type = $request->type;
+
+        $students = Student::with('user')->where('is_active', true)->orderBy('created_at')->get();
+        $classes = ClassRoom::active()->orderBy('name')->get();
+        $subjects = Subject::active()->orderBy('name')->get();
+        $exams = Exam::with(['subject', 'class'])->latest('exam_date')->get();
+
+        $academicYears = $this->getAcademicYears();
+
+        return view('reports.form', compact(
+            'type',
+            'students',
+            'classes',
+            'subjects',
+            'exams',
+            'academicYears'
+        ));
+    }
+
+    /**
      * Generate student report card
      */
     public function studentReportCard(Request $request)
-{
-    // Validate input
-    $request->validate([
-        'student_id' => 'required|exists:students,id',
-        'academic_year' => 'required|string',
-        'semester' => 'nullable|string',
-    ]);
+    {
+        $request->validate([
+            'student_id' => 'required|exists:students,id',
+            'academic_year' => 'required|string',
+            'semester' => 'nullable|string',
+        ]);
 
-    // Find student
-    $student = Student::with(['user', 'class'])->findOrFail($request->student_id);
-    $academicYear = $request->academic_year;
-    $semester = $request->semester;
+        $student = Student::with(['user', 'class'])->findOrFail($request->student_id);
+        $academicYear = $request->academic_year;
+        $semester = $request->semester;
 
-    // Split academic year into start and end years
-    if (!str_contains($academicYear, '-')) {
-        return back()->withErrors(['academic_year' => 'Invalid academic year format.']);
+        if (!str_contains($academicYear, '-')) {
+            return back()->withErrors(['academic_year' => 'Invalid academic year format.']);
+        }
+
+        list($startYear, $endYear) = explode('-', $academicYear);
+
+        $startDate = Carbon::createFromDate($startYear, 1, 1);
+        $endDate = Carbon::createFromDate($endYear, 12, 31);
+
+        $grades = $student->grades()
+            ->with(['exam.subject'])
+            ->whereHas('exam', function ($query) use ($academicYear, $semester) {
+                $query->where('academic_year', $academicYear);
+                if ($semester) {
+                    $query->where('semester', $semester);
+                }
+            })
+            ->get()
+            ->groupBy('exam.subject.name');
+
+        $stats = [
+            'total_subjects' => $grades->count(),
+            'current_gpa' => $student->calculateGPA($academicYear, $semester),
+            'attendance_percentage' => $student->getAttendancePercentage($startDate, $endDate),
+            'class_rank' => $student->getClassRank(),
+            'total_students' => $student->class->total_students ?? 0,
+        ];
+
+        $pdf = PDF::loadView('reports.student-report-card', compact(
+            'student',
+            'grades',
+            'stats',
+            'academicYear',
+            'semester'
+        ));
+
+        $filename = 'report_card_' . $student->student_number . '_' . str_replace('-', '_', $academicYear) . '.pdf';
+
+        return $pdf->download($filename);
     }
-
-    list($startYear, $endYear) = explode('-', $academicYear);
-
-    $startDate = Carbon::createFromDate($startYear, 1, 1);
-    $endDate = Carbon::createFromDate($endYear, 12, 31);
-
-    // Get grades for student in the academic year (and semester if provided)
-    $grades = $student->grades()
-        ->with(['exam.subject'])
-        ->whereHas('exam', function ($query) use ($academicYear, $semester) {
-            $query->where('academic_year', $academicYear);
-            if ($semester) {
-                $query->where('semester', $semester);
-            }
-        })
-        ->get()
-        ->groupBy('exam.subject.name');
-
-    // Calculate statistics
-    $stats = [
-        'total_subjects' => $grades->count(),
-        'gpa' => $student->calculateGPA($academicYear, $semester),
-        'attendance_percentage' => $student->getAttendancePercentage($startDate, $endDate),
-        'class_rank' => $student->getClassRank(),
-        'total_students' => $student->class->total_students ?? 0,
-    ];
-
-    // Generate PDF
-    $pdf = PDF::loadView('reports.student-report-card', compact(
-        'student',
-        'grades',
-        'stats',
-        'academicYear',
-        'semester'
-    ));
-
-    $filename = 'report_card_' . $student->student_number . '_' . str_replace('-', '_', $academicYear) . '.pdf';
-
-    return $pdf->download($filename);
-}
-
 
     /**
      * Generate class performance report
@@ -96,11 +113,10 @@ class ReportController extends Controller
         $class = ClassRoom::with(['students.user', 'classTeacher'])->findOrFail($request->class_id);
         $academicYear = $request->academic_year;
 
-        // Get all students with their GPAs
         $students = $class->students()
             ->where('is_active', true)
             ->get()
-            ->map(function($student) use ($academicYear) {
+            ->map(function ($student) use ($academicYear) {
                 return [
                     'student' => $student,
                     'gpa' => $student->calculateGPA($academicYear),
@@ -110,7 +126,6 @@ class ReportController extends Controller
             })
             ->sortByDesc('gpa');
 
-        // Class statistics
         $stats = [
             'total_students' => $class->total_students,
             'average_gpa' => $class->getAverageGPA($academicYear),
@@ -118,7 +133,6 @@ class ReportController extends Controller
             'subjects' => $class->getSubjects()->count(),
         ];
 
-        // Generate PDF
         $pdf = PDF::loadView('reports.class-performance', compact(
             'class',
             'students',
@@ -147,11 +161,10 @@ class ReportController extends Controller
         $endDate = $request->end_date;
 
         if ($class) {
-            // Class-specific report
             $students = $class->students()
                 ->where('is_active', true)
                 ->get()
-                ->map(function($student) use ($startDate, $endDate) {
+                ->map(function ($student) use ($startDate, $endDate) {
                     return [
                         'student' => $student,
                         'present' => $student->getTotalPresentDays($startDate, $endDate),
@@ -163,11 +176,10 @@ class ReportController extends Controller
 
             $title = 'Attendance Report - ' . $class->full_name;
         } else {
-            // School-wide report
             $students = Student::where('is_active', true)
                 ->with(['user', 'class'])
                 ->get()
-                ->map(function($student) use ($startDate, $endDate) {
+                ->map(function ($student) use ($startDate, $endDate) {
                     return [
                         'student' => $student,
                         'present' => $student->getTotalPresentDays($startDate, $endDate),
@@ -180,7 +192,6 @@ class ReportController extends Controller
             $title = 'School-Wide Attendance Report';
         }
 
-        // Generate PDF
         $pdf = PDF::loadView('reports.attendance-summary', compact(
             'students',
             'class',
@@ -205,10 +216,8 @@ class ReportController extends Controller
 
         $exam = Exam::with(['subject', 'class', 'grades.student.user'])->findOrFail($request->exam_id);
 
-        // Grade distribution
         $gradeDistribution = $exam->getGradeDistribution();
 
-        // Statistics
         $stats = [
             'total_students' => $exam->getTotalStudentsCount(),
             'graded_students' => $exam->getGradedStudentsCount(),
@@ -220,16 +229,13 @@ class ReportController extends Controller
             'pass_percentage' => $exam->getPassPercentage(),
         ];
 
-        // Top performers
         $topPerformers = $exam->getTopPerformers(10);
 
-        // All grades sorted
         $allGrades = $exam->grades()
             ->with('student.user')
             ->orderBy('marks_obtained', 'desc')
             ->get();
 
-        // Generate PDF
         $pdf = PDF::loadView('reports.exam-analysis', compact(
             'exam',
             'stats',
@@ -256,13 +262,11 @@ class ReportController extends Controller
         $subject = Subject::findOrFail($request->subject_id);
         $academicYear = $request->academic_year;
 
-        // Get all exams for this subject in the academic year
         $exams = Exam::where('subject_id', $subject->id)
             ->where('academic_year', $academicYear)
             ->with(['class', 'grades'])
             ->get();
 
-        // Statistics
         $stats = [
             'total_exams' => $exams->count(),
             'total_students' => $subject->getTotalStudentsCount($academicYear),
@@ -271,8 +275,7 @@ class ReportController extends Controller
             'total_classes' => $subject->getClasses($academicYear)->count(),
         ];
 
-        // Exam-wise performance
-        $examPerformance = $exams->map(function($exam) {
+        $examPerformance = $exams->map(function ($exam) {
             return [
                 'exam' => $exam,
                 'average' => $exam->getAverageMarks(),
@@ -282,7 +285,6 @@ class ReportController extends Controller
             ];
         });
 
-        // Generate PDF
         $pdf = PDF::loadView('reports.subject-performance', compact(
             'subject',
             'stats',
@@ -296,31 +298,19 @@ class ReportController extends Controller
     }
 
     /**
-     * Show report generation forms
+     * Helper: Generate list of recent academic years
      */
-    public function showForm(Request $request)
+    private function getAcademicYears()
     {
-        $type = $request->type;
+        $current = date('Y');
+        $years = [];
 
-        $students = Student::with('user')->where('is_active', true)->orderBy('created_at')->get();
-        $classes = ClassRoom::active()->orderBy('name')->get();
-        $subjects = Subject::active()->orderBy('name')->get();
-        $exams = Exam::with(['subject', 'class'])->latest('exam_date')->get();
+        for ($i = 0; $i < 5; $i++) {
+            $start = $current - $i;
+            $end = $start + 1;
+            $years[] = "$start-$end";
+        }
 
-        $currentYear = date('Y');
-        $academicYears = [
-            ($currentYear - 2) . '-' . ($currentYear - 1),
-            ($currentYear - 1) . '-' . $currentYear,
-            $currentYear . '-' . ($currentYear + 1),
-        ];
-
-        return view('reports.form', compact(
-            'type',
-            'students',
-            'classes',
-            'subjects',
-            'exams',
-            'academicYears'
-        ));
+        return $years;
     }
 }

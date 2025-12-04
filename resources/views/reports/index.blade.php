@@ -13,82 +13,73 @@
     </nav>
 </div>
 
+<div class="alert alert-info">
+    <i class="fas fa-info-circle me-2"></i>
+    <strong>Note:</strong> Select a report type below to generate comprehensive PDF reports.
+</div>
+
 <div class="row">
-    <!-- Student Report Card -->
-    <div class="col-md-6 mb-4">
+    <!-- Report Cards -->
+    <div class="col-md-6 col-lg-4 mb-4">
         <div class="card h-100">
-            <div class="card-body">
-                <div class="text-center mb-3">
-                    <i class="fas fa-file-alt fa-3x text-primary mb-3"></i>
-                    <h5>Student Report Card</h5>
-                    <p class="text-muted">Generate comprehensive report cards for individual students</p>
-                </div>
-                <a href="{{ route('reports.form', ['type' => 'student-report-card']) }}" class="btn btn-primary w-100">
-                    <i class="fas fa-arrow-right me-2"></i>Generate Report
+            <div class="card-body text-center">
+                <i class="fas fa-file-alt fa-3x text-primary mb-3"></i>
+                <h5>Student Report Card</h5>
+                <p class="text-muted small">Individual student performance report with grades and attendance</p>
+                <a href="{{ route('reports.form', ['type' => 'student-report-card']) }}" class="btn btn-primary btn-sm">
+                    Generate <i class="fas fa-arrow-right ms-1"></i>
                 </a>
             </div>
         </div>
     </div>
 
-    <!-- Class Performance -->
-    <div class="col-md-6 mb-4">
+    <div class="col-md-6 col-lg-4 mb-4">
         <div class="card h-100">
-            <div class="card-body">
-                <div class="text-center mb-3">
-                    <i class="fas fa-chart-line fa-3x text-success mb-3"></i>
-                    <h5>Class Performance Report</h5>
-                    <p class="text-muted">Analyze overall class performance and rankings</p>
-                </div>
-                <a href="{{ route('reports.form', ['type' => 'class-performance']) }}" class="btn btn-success w-100">
-                    <i class="fas fa-arrow-right me-2"></i>Generate Report
+            <div class="card-body text-center">
+                <i class="fas fa-chart-line fa-3x text-success mb-3"></i>
+                <h5>Class Performance</h5>
+                <p class="text-muted small">Overall class analytics with rankings and statistics</p>
+                <a href="{{ route('reports.form', ['type' => 'class-performance']) }}" class="btn btn-success btn-sm">
+                    Generate <i class="fas fa-arrow-right ms-1"></i>
                 </a>
             </div>
         </div>
     </div>
 
-    <!-- Attendance Summary -->
-    <div class="col-md-6 mb-4">
+    <div class="col-md-6 col-lg-4 mb-4">
         <div class="card h-100">
-            <div class="card-body">
-                <div class="text-center mb-3">
-                    <i class="fas fa-calendar-check fa-3x text-info mb-3"></i>
-                    <h5>Attendance Summary</h5>
-                    <p class="text-muted">Detailed attendance reports with statistics</p>
-                </div>
-                <a href="{{ route('reports.form', ['type' => 'attendance-summary']) }}" class="btn btn-info w-100">
-                    <i class="fas fa-arrow-right me-2"></i>Generate Report
+            <div class="card-body text-center">
+                <i class="fas fa-calendar-check fa-3x text-info mb-3"></i>
+                <h5>Attendance Summary</h5>
+                <p class="text-muted small">Detailed attendance reports for any date range</p>
+                <a href="{{ route('reports.form', ['type' => 'attendance-summary']) }}" class="btn btn-info btn-sm">
+                    Generate <i class="fas fa-arrow-right ms-1"></i>
                 </a>
             </div>
         </div>
     </div>
 
-    <!-- Exam Analysis -->
-    <div class="col-md-6 mb-4">
+    <div class="col-md-6 col-lg-4 mb-4">
         <div class="card h-100">
-            <div class="card-body">
-                <div class="text-center mb-3">
-                    <i class="fas fa-chart-pie fa-3x text-warning mb-3"></i>
-                    <h5>Exam Analysis Report</h5>
-                    <p class="text-muted">Comprehensive exam performance analysis</p>
-                </div>
-                <a href="{{ route('reports.form', ['type' => 'exam-analysis']) }}" class="btn btn-warning w-100">
-                    <i class="fas fa-arrow-right me-2"></i>Generate Report
+            <div class="card-body text-center">
+                <i class="fas fa-chart-pie fa-3x text-warning mb-3"></i>
+                <h5>Exam Analysis</h5>
+                <p class="text-muted small">Comprehensive exam performance with grade distribution</p>
+                <a href="{{ route('reports.form', ['type' => 'exam-analysis']) }}" class="btn btn-warning btn-sm">
+                    Generate <i class="fas fa-arrow-right ms-1"></i>
                 </a>
             </div>
         </div>
     </div>
 
-    <!-- Subject Performance -->
-    <div class="col-md-6 mb-4">
+    <div class="col-md-6 col-lg-4 mb-4">
         <div class="card h-100">
-            <div class="card-body">
-                <div class="text-center mb-3">
-                    <i class="fas fa-book fa-3x text-danger mb-3"></i>
-                    <h5>Subject Performance Report</h5>
-                    <p class="text-muted">Subject-wise performance across all classes</p>
-                </div>
-                <a href="{{ route('reports.form', ['type' => 'subject-performance']) }}" class="btn btn-danger w-100">
-                    <i class="fas fa-arrow-right me-2"></i>Generate Report
+            <div class="card-body text-center">
+                <i class="fas fa-book fa-3x text-danger mb-3"></i>
+                <h5>Subject Performance</h5>
+                <p class="text-muted small">Subject-wise performance across all classes</p>
+                <a href="{{ route('reports.form', ['type' => 'subject-performance']) }}" class="btn btn-danger btn-sm">
+                    Generate <i class="fas fa-arrow-right ms-1"></i>
                 </a>
             </div>
         </div>
